@@ -9,7 +9,7 @@ runs-on: ubuntu-latest
 
 ```
 steps:
-  - name: Checkout
+  - name: Checkout repo
     uses: actions/checkout@v3
 
   - name: Setup Node
@@ -20,23 +20,31 @@ steps:
   - name: Install dependencies
     run: npm install
 
-  - name: Build web
+  - name: Build web app
     run: npm run build
 
   - name: Install Capacitor
     run: npm install @capacitor/core @capacitor/cli
 
-  - name: Init Capacitor
-    run: |
-      npx cap init iptv com.example.iptv
-      npx cap add android
+  - name: Create Capacitor config (if missing)
+    run: npx cap init iptv com.example.iptv || echo "Already initialized"
 
-  - name: Sync
+  - name: Add Android platform
+    run: npx cap add android || echo "Android already added"
+
+  - name: Sync project
     run: npx cap sync
+
+  - name: Setup Java
+    uses: actions/setup-java@v3
+    with:
+      distribution: temurin
+      java-version: 17
 
   - name: Build APK
     run: |
       cd android
+      chmod +x gradlew
       ./gradlew assembleDebug
 
   - name: Upload APK
